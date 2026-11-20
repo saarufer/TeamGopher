@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*:Zone.Identifier
+
+# 运行时数据：本地账本、证据、行情与日报不入库（data/imports 保留，用于重建账本）
+data/events/
+data/evidence/
+data/normalized/
+data/raw/
+reports/*
+!reports/.gitkeep
+*.csv.tmp

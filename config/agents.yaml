@@ -1,0 +1,12 @@
+mode: shadow            # shadow: Agent 只提议并记录，不自动创建订单
+llm:
+  provider: anthropic   # anthropic | offline（离线规则基线，无需 API key）
+  model: claude-opus-5
+  effort: high
+  max_tokens: 16000
+  red_team_model: claude-opus-5
+research_universe: [SPY, RSP, QQQ, XLK, XLV, XLP, XLF, XLI, XLU, XLE, IWM, NVDA]
+company_watchlist: [NVDA, AMD, AVGO, MSFT, GOOGL, AMZN, META, PLTR]
+default_trade_budget_usd: "3000"
+max_candidates: 3
+horizon_days: 10

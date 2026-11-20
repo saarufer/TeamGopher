@@ -1,0 +1,25 @@
+# 工程默认阈值（§3.8）。15 个百分点是工程建议，不是历史硬阈值。
+single_stock_meeting_weight: "0.15"      # 单一股票拟配置 ≥15% NAV → 地鼠会议
+cash_change_meeting_pp: "0.15"           # 现金比例变化 ≥15 个百分点 → 地鼠会议
+max_single_etf_weight: "0.35"            # 单只 ETF 超过即需会议
+stress_scenarios: ["-0.10", "-0.05", "-0.02", "0.02", "0.05", "0.10"]
+min_expected_edge_pct: "0.30"            # 期望收益(%)低于此视为无可交易优势
+whole_shares_for_new_orders: true
+price_conflict_threshold: "0.005"        # 两源收盘价差 >0.5% → 正式净值暂停
+etfs: [SPY, RSP, QQQ, XLK, XLV, XLP, XLF, XLI, XLU, XLE, IWM, BNO, XLY, XLC, XLB, XLRE]
+# 无足够历史计算 beta 时的假设值（标注为 assumed，不是估计结果）
+assumed_beta:
+  SPY: "1.00"
+  RSP: "1.00"
+  QQQ: "1.15"
+  XLK: "1.20"
+  NVDA: "1.80"
+  XLE: "0.80"
+  BNO: "0.40"
+  XLI: "1.00"
+  XLF: "1.05"
+  XLV: "0.70"
+  XLP: "0.60"
+  XLU: "0.55"
+  IWM: "1.15"
+default_beta: "1.00"

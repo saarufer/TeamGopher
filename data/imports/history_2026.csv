@@ -1,0 +1,20 @@
+seq,date_et,time_et,kind,ticker,side,quantity,price,registered_cash_delta,approval_id,execution_model,fill_confidence,flags,note
+1,2026-10-06,09:30,FILL,SPY,BUY,12.850990,778.15,-10000.00,,registered_history,registered,,投入 $10,000
+2,2026-10-06,09:30,FILL,QQQ,BUY,10.519120,760.52,-8000.00,,registered_history,registered,,投入 $8,000
+3,2026-10-06,09:30,FILL,NVDA,BUY,28.913670,242.10,-7000.00,,registered_history,registered,,投入 $7,000
+4,2026-10-06,16:00,CHECKPOINT,,,,,75000.00,,,,,登记现金 $75,000
+5,2026-10-09,09:30,FILL,BNO,BUY,94.741829,63.33,-6000.00,appr_hist_20261008,registered_history,registered,PRICE_CONFLICT,开盘价在后续来源出现过不同数值
+6,2026-10-09,09:30,FILL,XLE,BUY,92.307692,65.00,-6000.00,appr_hist_20261008,registered_history,registered,PRICE_CONFLICT,开盘价在后续来源出现过不同数值
+7,2026-10-09,16:00,CHECKPOINT,,,,,63000.00,,,,,登记现金 $63,000
+8,2026-10-12,09:30,FILL,BNO,SELL,94.741829,65.50,6205.59,appr_hist_20261011,registered_history,registered,,卖 BNO 全部
+9,2026-10-12,09:30,FILL,XLE,SELL,46.153846,65.85,3039.23,appr_hist_20261011,registered_history,registered,,卖 XLE 一半
+10,2026-10-12,16:00,CHECKPOINT,,,,,72244.82,,,,,登记现金 $72,244.82
+11,2026-10-19,09:30,FILL,QQQ,SELL,5.259560,719.66,3785.09,appr_hist_20261016,registered_history,registered,,卖 QQQ 一半
+12,2026-10-19,09:30,FILL,NVDA,SELL,14.456835,218.01,3151.73,appr_hist_20261016,registered_history,registered,,卖 NVDA 一半
+13,2026-10-19,15:59,CASH_ADJUSTMENT,,,,,0.01,,,,ROUNDING_RECONCILIATION,两笔登记收入合计 $6936.82，后续现金账本按 $6936.83 增加；登记舍入差异
+14,2026-10-19,16:00,CHECKPOINT,,,,,79181.65,,,,,登记现金 $79,181.65
+15,2026-10-30,09:43,FILL,XLI,BUY,23,170.13,-3912.99,appr_hist_20261029,provisional_limit_inference_daily_range,provisional,LIMIT_FILL_UNVERIFIED,事后基于预设限价与行情区间推定；订单 09:43 ET 后生效；XLI 有较晚时点价格支持
+16,2026-10-30,09:43,FILL,XLF,BUY,43,56.94,-2448.42,appr_hist_20261029,provisional_limit_inference_daily_range,provisional,LIMIT_FILL_UNVERIFIED;TOUCH_TIME_UNVERIFIED,全天最低价低于限价不能证明发生于 09:43 之后；需核验精确触价时间
+17,2026-10-30,16:00,CHECKPOINT,,,,,72820.24,,,,,登记现金 $72,820.24
+18,2026-11-02,09:30,FILL,XLV,BUY,37,184.04,-6809.48,appr_hist_20261029,provisional_limit_inference_daily_range,provisional,LIMIT_FILL_UNVERIFIED,日内最低价低于限价但无精确时间及交易量
+19,2026-11-02,16:00,CHECKPOINT,,,,,66010.76,,,,,登记现金 $66,010.76

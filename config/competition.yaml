@@ -1,0 +1,24 @@
+# 比赛制度不可变（文档 §2.3）。已发生的比赛参数只能追加更正，不得改写。
+account_id: gopher_main
+initial_cash: "100000.00"
+benchmark:
+  ticker: SPY
+  base_date: "2026-10-02"
+  base_close: "769.64"
+  kind: price_return          # 不含分红再投资；改为总回报需另建基准版本
+competitions:
+  - competition_id: gopher_challenge_2026_10
+    start_date: "2026-10-03"
+    end_date: null            # 原比赛截止时间尚需从原始规则/日志独立确认（§2.3）
+    note: 原始一个月挑战
+  - competition_id: gopher_extension_2026
+    start_date: null          # 待原比赛截止日确认后填写
+    end_date: null
+    note: 延长观察期，独立计量，不覆盖原始比赛结算
+active_competition_id: gopher_extension_2026
+rules:
+  long_only: true
+  leverage: false
+  options: false
+  short: false
+  fractional_shares: true     # 历史使用小数份额；新订单默认整股，见 risk_limits.yaml

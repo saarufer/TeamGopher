@@ -1,0 +1,14 @@
+# 来源优先级（§3.1）：数字越小越优先
+priority:
+  exchange: 0
+  filing: 1
+  official: 2
+  vendor: 3
+  manual: 4
+  news: 5
+  derived: 6
+daily_bar_available_delay_minutes: 15     # 日线在收盘后 15 分钟才视为"可得"
+vendors:
+  yfinance:
+    source_type: vendor
+    auto_adjust: false                     # 统一使用未复权价格；adjustment_type=unadjusted

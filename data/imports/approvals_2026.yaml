@@ -1,0 +1,39 @@
+# 必须保留的历史审批（§6.3）。valid_until 为 null 表示有效期未登记：不能用于新订单。
+- approval_id: appr_hist_20261008
+  meeting_id: meeting_hist_20261008
+  granted_at: "2026-10-08T20:00:00-04:00"
+  sides: [BUY]
+  budget_usd: "12000"
+  ticker_caps_usd: {BNO: "6000", XLE: "6000"}
+  valid_from: "2026-10-09T09:30:00-04:00"
+  valid_until: "2026-10-09T16:00:00-04:00"
+  execution_rules: 10/09 买入 BNO $6k + XLE $6k
+  note: 10/08 地鼠会议批准（时刻为迁移时估计，原始消息时间待核实）
+- approval_id: appr_hist_20261011
+  meeting_id: null
+  granted_at: "2026-10-11T20:00:00-04:00"
+  sides: [SELL]
+  ticker_qty_caps: {BNO: "94.741829", XLE: "46.153846"}
+  valid_from: "2026-10-12T09:30:00-04:00"
+  valid_until: "2026-10-12T16:00:00-04:00"
+  execution_rules: 10/12 卖 BNO 全部、XLE 一半（10/11 预设）
+  note: 10/11 预设规则
+- approval_id: appr_hist_20261016
+  meeting_id: meeting_hist_20261016
+  granted_at: "2026-10-16T20:00:00-04:00"
+  sides: [SELL]
+  ticker_qty_caps: {QQQ: "5.259560", NVDA: "14.456835"}
+  valid_from: "2026-10-19T09:30:00-04:00"
+  valid_until: "2026-10-19T16:00:00-04:00"
+  execution_rules: 10/19 QQQ、NVDA 各卖出一半
+  note: 10/16 地鼠会议批准
+- approval_id: appr_hist_20261029
+  meeting_id: meeting_hist_20261029
+  granted_at: "2026-10-30T09:00:00-04:00"
+  sides: [BUY]
+  budget_usd: "20000"
+  ticker_caps_usd: {XLI: "8000", XLV: "7000", XLF: "5000"}
+  valid_from: "2026-10-30T09:43:00-04:00"
+  valid_until: null
+  execution_rules: 非科技配置，XLI 上限 $8k、XLV $7k、XLF $5k，合计 $20k；分批与限价规则见原始记录
+  note: 10/29–10/30 用户明确支持；有效期未登记
