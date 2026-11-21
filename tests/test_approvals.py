@@ -113,3 +113,17 @@ def test_sell_dollar_cap_enforced_across_orders(store, settings):
     create_order(store, settings, MarketStore(settings.bars_path), **kw)
     with pytest.raises(OrderRejected, match="上限"):
         create_order(store, settings, MarketStore(settings.bars_path), **kw)
+
+
+def test_approval_must_match_chosen_candidate(store, settings):
+    mid = create_meeting(store, candidates=[{"ticker": "XLP", "action": "BUY"}, {"ticker": "NVDA", "action": "SELL"}],
+                         triggers=["t"], summary="", at=parse_dt("2026-11-30T20:00:00"))
+    kw = dict(valid_until=parse_dt("2026-12-04T16:00:00"), execution_rules="", at=parse_dt("2026-11-30T21:00:00"))
+    with pytest.raises(ApprovalError, match="没有 XLP"):
+        approve(store, settings.initial_cash, mid, tickers_caps_usd={"NVDA": Decimal("1100")}, sides=["SELL"],
+                candidate_index=0, **kw)
+    with pytest.raises(ApprovalError, match="--sides SELL"):
+        approve(store, settings.initial_cash, mid, tickers_caps_usd={"NVDA": Decimal("1100")}, sides=["BUY"],
+                candidate_index=1, **kw)
+    approve(store, settings.initial_cash, mid, tickers_caps_usd={"NVDA": Decimal("1100")}, sides=["SELL"],
+            candidate_index=1, **kw)

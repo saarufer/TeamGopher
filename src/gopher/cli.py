@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from .agents import auditor
 from .approvals import ApprovalError, approve, reject
-from .clock import ET, fmt_dual, market_close, market_open, next_trading_day, now_utc, parse_dt
+from .clock import ET, fmt_dual, is_trading_day, market_close, market_open, next_trading_day, now_utc, parse_dt
 from .config import Settings
 from .event_store import EventStore, to_jsonable
 from .evidence import EvidenceStore
@@ -174,8 +174,10 @@ def cmd_order(a):
         eff = parse_dt(a.effective_from)
     else:
         d = now.astimezone(ET).date()
-        eff = market_open(d) if now < market_open(d) else (now if now < market_close(d) else market_open(next_trading_day(d)))
-        eff = max(eff, now)
+        if not is_trading_day(d) or now >= market_close(d):
+            eff = market_open(next_trading_day(d))   # 周末 / 节假日 / 已收盘 → 下一个交易日开盘
+        else:
+            eff = max(market_open(d), now)           # 盘前 → 今天开盘；盘中 → 立即
     try:
         it = create_order(store, s, market, ticker=a.ticker, side=a.side.upper(), quantity=Decimal(a.quantity),
                           order_type="LIMIT" if a.limit else "MARKET",
@@ -214,6 +216,66 @@ def cmd_evidence(a):
     else:
         for e in ev.all()[-a.n:]:
             print(f"{e.evidence_id}  {e.source_type:8} {e.reliability:11} {e.available_at:%Y-%m-%d %H:%M}Z  {e.title}")
+
+
+def cmd_event(a):
+    from .agents import expectations
+    s = _settings()
+    store = EventStore(s.events_path)
+    st = replay(store.load(), s.initial_cash)
+    if a.action == "add":
+        if not (a.name and a.at):
+            raise SystemExit("需要 --name 和 --at，例如：--name \"美国 11 月 CPI\" --at 2026-12-10T08:30")
+        key = expectations.schedule(store, name=a.name, scheduled_at=parse_dt(a.at),
+                                    tickers=[t.upper() for t in (a.tickers or ["SPY"])], category=a.category,
+                                    consensus=a.consensus, source_url=a.url, competition_id=s.active_competition_id)
+        print(f"已登记事件 {key}（公布时间 {fmt_dual(parse_dt(a.at))}）。下次 `gopher run` 会在公布前为它冻结预测。")
+    elif a.action == "actual":
+        try:
+            expectations.record_actual(store, st, a.event_key, a.value, now_utc(), s.active_competition_id)
+        except expectations.ExpectationError as e:
+            raise SystemExit(str(e))
+        print("已登记实际值")
+    else:
+        now = now_utc()
+        for e in sorted(st.scheduled_events.values(), key=lambda e: e["scheduled_at"]):
+            fcs = [f for f in st.forecasts if f["event_key"] == e["event_key"]]
+            act = st.event_actuals.get(e["event_key"])
+            when = parse_dt(e["scheduled_at"])
+            status = "已公布" if when <= now else "待公布"
+            print(f"{e['event_key']:32} {fmt_dual(when)}  {status}  {e['name']}  标的 {','.join(e['tickers'])}"
+                  f"  预测 {len(fcs)} 个" + (f"  实际：{act['actual_after_release']}" if act else ""))
+            for f in fcs:
+                print(f"    └ {f['ticker']} 上涨概率 {f['p_up']:.0%} 期望 {f['expected_return_pct']:+.2f}%  方案：{f['conditional_plan']}")
+
+
+def cmd_review(a):
+    from .agents import postmortem
+    from .valuation import nav_series
+    s = _settings()
+    as_of = parse_dt(a.as_of) if a.as_of else now_utc()
+    events = EventStore(s.events_path).load()
+    market = MarketStore(s.bars_path, s.data_sources.get("priority"))
+    series = nav_series(events, market, s, as_of)
+    if not series:
+        raise SystemExit("没有行情，先运行 gopher fetch")
+    pm = postmortem.run(s, events, market.view(as_of), as_of, series)
+    d = pm.decomposition
+    print(f"复盘区间 {d['period']}")
+    print(f"相对 SPY {d['excess_vs_spy']:+,.2f} = 敞口效应 {d['exposure_effect']:+,.2f}（平均现金 {d['avg_cash_weight']:.0%}）"
+          f" + 敞口之外 {d['beyond_exposure']:+,.2f}")
+    print("\n反事实（不计入账本）：")
+    for c in pm.counterfactuals:
+        print(f"  {c['name']:14} {c['nav']:>12,.2f}   该分支−实际 {c['vs_actual']:+10,.2f}   {c['note']}")
+    for kind, name in (("decision", "交易决策"), ("forecast", "事件预测"), ("hold", "HOLD")):
+        sm = pm.summary(kind)
+        if sm["n"]:
+            hr = f"命中率 {sm['hit_rate']:.0%}，" if sm["hit_rate"] is not None else ""
+            br = f"Brier {sm['brier']:.3f}，" if sm["brier"] is not None else ""
+            print(f"{name}：已到期 {sm['n']} 个，{hr}{br}")
+    print(f"未到期 {pm.pending} 个")
+    for x in pm.lessons:
+        print("  教训：", x)
 
 
 def main(argv=None):
@@ -293,6 +355,22 @@ def main(argv=None):
     e.add_argument("--tickers", nargs="*")
     e.add_argument("-n", type=int, default=20)
     e.set_defaults(fn=cmd_evidence)
+
+    ev = sub.add_parser("event", help="事件日历：list/add/actual（事件预期 Agent 会在公布前冻结预测）")
+    ev.add_argument("action", choices=["list", "add", "actual"])
+    ev.add_argument("event_key", nargs="?")
+    ev.add_argument("--name")
+    ev.add_argument("--at", help="公布时间，美东，例如 2026-12-10T08:30")
+    ev.add_argument("--tickers", nargs="*")
+    ev.add_argument("--category", default="macro", choices=["macro", "earnings", "policy", "ipo", "other"])
+    ev.add_argument("--consensus", default="", help="事前市场共识，例如 \"CPI 同比 2.9%%\"")
+    ev.add_argument("--url", default="")
+    ev.add_argument("--value", help="actual：公布后的实际值")
+    ev.set_defaults(fn=cmd_event)
+
+    rv = sub.add_parser("review", help="复盘校准：决策打分、反事实、超额来源拆分")
+    rv.add_argument("--as-of")
+    rv.set_defaults(fn=cmd_review)
 
     a = p.parse_args(argv)
     rc_ = a.fn(a)

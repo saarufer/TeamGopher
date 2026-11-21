@@ -11,11 +11,11 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
-from .agents import auditor, red_team, rotation, strategist
+from .agents import auditor, exposure, expectations, postmortem, red_team, regime, rotation, strategist
 from .agents.llm import LLM, LLMError, make_llm
 from .agents.news import gather_news
 from .approvals import create_meeting
-from .clock import now_utc, ensure_aware
+from .clock import ensure_aware, now_utc, parse_dt
 from .config import Settings
 from .event_store import EventStore, canonical, sha256, to_jsonable
 from .evidence import EvidenceStore
@@ -43,6 +43,12 @@ class RunResult:
     orders: list
     recorded: bool = True
     warnings: list[str] = field(default_factory=list)
+    regime: regime.Regime | None = None
+    exposure: exposure.ExposureAssessment | None = None
+    new_forecasts: list[dict] = field(default_factory=list)
+    upcoming_events: list[dict] = field(default_factory=list)
+    open_forecasts: list[dict] = field(default_factory=list)
+    postmortem: postmortem.Postmortem | None = None
     portfolio_beta: Decimal | None = None
     stress: dict | None = None
     max_drawdown: Decimal | None = None
@@ -92,6 +98,16 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
     if not feats:
         warnings.append("没有可用行情：请先运行 `gopher fetch`")
 
+    # 2b. 市场状态（新增，确定性）
+    reg = regime.assess(view, settings.benchmark_ticker)
+
+    # 2c. 净值序列 → 仓位管理（新增）与复盘校准（新增）
+    series = nav_series(events, market, settings, cutoff) if val.nav else []
+    last_fill_seq = max((f["seq"] for f in state.fills), default=0)
+    expo = exposure.assess(settings, reg, val.nav, val.cash_weight, [float(p.cash_weight) for p in series],
+                           state.decisions, last_fill_seq)
+    pm = postmortem.run(settings, events, view, cutoff, series) if series else None
+
     # 3. 证据快照（派生证据，available_at = data_cutoff）
     tag = f"{cutoff:%Y%m%dT%H%M}_{uuid.uuid4().hex[:4]}"
     ev_rot = evidence.add(evidence_id=f"ev_rot_{tag}", source_url="derived://rotation", retrieved_at=now,
@@ -126,6 +142,27 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
             except LLMError as e:
                 warnings.append(f"新闻检索失败：{e}")
 
+    # 4b. 事件预期（新增）：对即将公布的事件冻结事前预测
+    new_fcs: list[dict] = []
+    lookahead = int(acfg.get("event_lookahead_days", 7))
+    all_fcs = replay(events, settings.initial_cash).forecasts
+    for ev_, tk in expectations.pending(state, cutoff, lookahead, all_fcs):
+        try:
+            if llm:
+                fc = expectations.llm_forecast(llm, _load_prompt(settings, "expectations"), ev_, tk, {
+                    "data_cutoff": cutoff, "features": by_t[tk].as_dict() if tk in by_t else None,
+                    "market_regime": reg.as_dict()})
+            else:
+                fc = expectations.offline_forecast(ev_, tk, by_t.get(tk))
+            new_fcs.append(expectations.to_payload(ev_, fc, made_at=now, cutoff=cutoff, engine=engine_name))
+        except (LLMError, expectations.ExpectationError) as e:
+            warnings.append(f"事件预期 {ev_['event_key']}/{tk} 失败：{e}")
+    if record and new_fcs:
+        store.append_many([("ForecastRecorded", f, now, "expectations", comp) for f in new_fcs])
+    upcoming = expectations.upcoming(state, cutoff)
+    open_fcs = [f for f in [*all_fcs, *new_fcs]
+                if parse_dt(f["data_cutoff"]) <= cutoff and parse_dt(f["scheduled_at"]) > cutoff]
+
     visible = [ev_rot, ev_pf] + [e for e in evidence.visible(cutoff)
                                  if e.source_type != "derived" and (cutoff - e.available_at).days <= 7]
     ev_ids = {e.evidence_id for e in visible}
@@ -151,6 +188,15 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
         "evidence": [{"evidence_id": e.evidence_id, "source_type": e.source_type, "reliability": e.reliability,
                       "available_at": e.available_at, "title": e.title, "summary": e.summary,
                       "claim_type": e.claim_type, "url": e.source_url, "tickers": e.tickers} for e in visible],
+        "market_regime": reg.as_dict(),
+        "exposure_policy": {**expo.as_dict(), "instruction": (
+            "必须至少提出一个 BUY 候选，把现金拉回目标区间" if expo.mandate == "REDEPLOY" else
+            "必须至少提出一个 SELL 候选，把现金拉回目标区间" if expo.mandate == "DE_RISK" else "现金在目标区间内，无强制要求")},
+        "upcoming_events": [{k: e[k] for k in ("event_key", "name", "scheduled_at", "tickers", "consensus_before_release")}
+                            for e in upcoming],
+        "frozen_event_forecasts": [{k: f[k] for k in ("event_key", "ticker", "p_up", "expected_return_pct",
+                                                      "conditional_plan", "horizon_days")} for f in open_fcs],
+        "postmortem": pm.context() if pm else None,
         "constraints": {"long_only": True, "no_leverage": True, "no_options": True, "max_candidates": max_c,
                         "default_trade_budget_usd": budget, "horizon_days": horizon},
     }
@@ -167,6 +213,17 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
             [ev_rot.evidence_id, ev_pf.evidence_id], budget, horizon, max_c, settings.benchmark_ticker)
     tradable = set(universe) | set(holdings)
     vcs = strategist.validate(proposal, ev_ids, tradable, avail_cash, max_c)
+
+    # 5b. 仓位管理 Agent 补位：有强制要求而 Strategist 没做到时，由它自己提出候选
+    if expo.mandate and not exposure.complies(expo.mandate, [v.candidate for v in vcs if v.valid]):
+        extra = exposure.propose(expo, settings, feats, weights, holdings, [ev_rot.evidence_id, ev_pf.evidence_id], horizon)
+        if extra:
+            tmp = proposal.model_copy(update={"candidates": [extra]})
+            add = strategist.validate(tmp, ev_ids, tradable | {extra.ticker}, avail_cash, 1)
+            for v in add:
+                v.origin = "exposure"
+            vcs += add
+            warnings.append(f"Strategist 未满足仓位管理要求（{expo.mandate}），已由仓位管理 Agent 补充候选 {extra.ticker}")
 
     # 6. Red Team
     min_edge = float(settings.risk_decimal("min_expected_edge_pct", "0.30"))
@@ -197,13 +254,13 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
         rv = rv_by.get((c.ticker, c.action))
         if not vc.valid or rk.blocked:
             gate = "BLOCKED"
-        elif vc.edge_pct < min_edge:
+        elif vc.edge_pct < min_edge and vc.origin != "exposure":
             gate = "NO_EDGE"
         elif rk.meeting_required or (rv and rv.verdict == "VETO_RECOMMENDED"):
             gate = "MEETING_REQUIRED"
         else:
             gate = "AUTHORIZED_BY_EXISTING_APPROVAL"
-        gated.append({"candidate": c, "validated": vc, "risk": rk, "review": rv, "gate": gate})
+        gated.append({"candidate": c, "validated": vc, "risk": rk, "review": rv, "gate": gate, "origin": vc.origin})
 
     # 8. 记录（不可变）
     meeting_id = None
@@ -218,7 +275,8 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
                 "expected_return_pct": vc.expected_return_pct, "edge_pct": vc.edge_pct, "gate": g["gate"], "engine": engine_name,
                 "red_team_verdict": g["review"].verdict if g["review"] else None,
                 "meeting_triggers": rk.meeting_triggers, "hard_blocks": rk.hard_blocks,
-                "approval_id": rk.covering_approval_id,
+                "approval_id": rk.covering_approval_id, "horizon_days": c.horizon_days, "origin": vc.origin,
+                "market_regime": reg.label,
             }, now, "orchestrator", comp))
         items.append(("DecisionRecorded", {
             "decision_id": f"dec_{tag}_HOLD", "decided_at": now, "data_cutoff": cutoff,
@@ -226,7 +284,8 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
             "thesis": proposal.hold_counterfactual.rationale,
             "cash_opportunity_cost_note": proposal.hold_counterfactual.cash_opportunity_cost_note,
             "no_trade_reason": proposal.no_trade_reason, "evidence_ids": [ev_pf.evidence_id],
-            "invalidation_conditions": [], "engine": engine_name,
+            "invalidation_conditions": [], "engine": engine_name, "horizon_days": horizon,
+            "market_regime": reg.label, "cash_weight": val.cash_weight, "exposure_status": expo.status,
         }, now, "orchestrator", comp))
         store.append_many(items)
         need = [g for g in gated if g["gate"] == "MEETING_REQUIRED"]
@@ -237,7 +296,7 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
                 triggers=sorted({t for g in need for t in g["risk"].meeting_triggers}
                                 | ({"Red Team 建议否决"} if any(g["review"] and g["review"].verdict == "VETO_RECOMMENDED" for g in need) else set())),
                 candidates=[{
-                    "index": i, "action": g["candidate"].action, "ticker": g["candidate"].ticker,
+                    "index": i, "origin": g["origin"], "action": g["candidate"].action, "ticker": g["candidate"].ticker,
                     "budget_usd": g["candidate"].budget_usd, "thesis": g["candidate"].thesis,
                     "expected_return_pct": g["validated"].expected_return_pct, "edge_pct": g["validated"].edge_pct,
                     "scenarios": [s.model_dump() for s in g["candidate"].scenarios],
@@ -255,7 +314,6 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
             }, occurred_at=now, source="orchestrator", competition_id=comp)
 
     # 9. 绩效序列 / 风险
-    series = nav_series(events, market, settings, cutoff) if val.nav else []
     mdd = max_drawdown([s.nav for s in series]) if series else None
     attr = attribution(series, state, val) if val.nav else None
     w_dec = val.weights()
@@ -265,6 +323,8 @@ def run_daily(settings: Settings, *, as_of: datetime | None = None, engine: str 
         meeting_id=meeting_id, recorded=record, orders=list(replay(store.load(), settings.initial_cash).orders.values()),
         warnings=warnings, portfolio_beta=portfolio_beta(w_dec, settings) if val.nav else None,
         stress=stress(val.nav, w_dec, settings) if val.nav else None, max_drawdown=mdd, attribution=attr,
+        regime=reg, exposure=expo, new_forecasts=new_fcs, upcoming_events=upcoming, open_forecasts=open_fcs,
+        postmortem=pm,
     )
 
     # 10. 日报

@@ -12,3 +12,9 @@
 - 若没有优势，candidates 为空，并在 hold_counterfactual 中量化现金机会成本。
 - 最多提出 {max_candidates} 个候选；BUY 的 budget_usd 不得超过可用现金。
 - 使用中文。
+
+其他 Agent 的输入（必须使用）：
+- market_regime（市场状态 Agent）：risk_on / neutral / risk_off 及理由。
+- exposure_policy（仓位管理 Agent）：目标现金区间与当前偏离。若 instruction 要求“必须提出 BUY/SELL 候选”，你必须照做；你仍可在 thesis 里写明自己不同意的理由，最终由地鼠会议决定。
+- upcoming_events / frozen_event_forecasts（事件预期 Agent）：即将公布的事件与已冻结的事前预测。不要只说“等消息公布再评估”：要么给出有条件方案，要么说明为什么没有优势。
+- postmortem（复盘校准 Agent）：过去决策的命中率、Brier 分数、敞口拆分和教训。若 Brier 不比 0.25 好，说明概率估计没有信息量，应更谨慎地偏离 50%。

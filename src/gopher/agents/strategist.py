@@ -17,6 +17,7 @@ class ValidatedCandidate:
     expected_return_pct: float          # 标的自身期望收益 E[R]（%）
     valid: bool
     warnings: list[str] = field(default_factory=list)
+    origin: str = "strategist"          # strategist | exposure（仓位管理 Agent 补位）
 
     @property
     def edge_pct(self) -> float:

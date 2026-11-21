@@ -23,3 +23,14 @@ assumed_beta:
   XLU: "0.55"
   IWM: "1.15"
 default_beta: "1.00"
+
+# 仓位管理 Agent：按市场状态给现金设目标区间（工程默认值，请按你的风险偏好修改）
+exposure_policy:
+  bands:
+    risk_on:  {cash_min: "0.20", cash_max: "0.50"}
+    neutral:  {cash_min: "0.35", cash_max: "0.65"}
+    risk_off: {cash_min: "0.55", cash_max: "0.85"}
+    unknown:  {cash_min: "0.35", cash_max: "0.75"}
+  max_days_out_of_band: 3       # 连续超出区间多少个交易日后，强制提出再部署 / 减仓方案
+  max_consecutive_holds: 5      # 连续多少次 HOLD/NO_TRADE 后，强制提出方案
+  rebalance_step_usd: "5000"    # 每次再部署 / 减仓的步长

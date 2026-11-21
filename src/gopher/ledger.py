@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 
-from .clock import ensure_aware
+from .clock import ensure_aware, parse_dt
 from .event_store import Event
 from .schemas import Approval, OrderIntent
 
@@ -66,6 +66,9 @@ class LedgerState:
     audit_flags: dict[str, dict] = field(default_factory=dict)
     corrections: list[dict] = field(default_factory=list)
     valuations: list[dict] = field(default_factory=list)
+    scheduled_events: dict[str, dict] = field(default_factory=dict)
+    forecasts: list[dict] = field(default_factory=list)
+    event_actuals: dict[str, dict] = field(default_factory=dict)
     issues: list[str] = field(default_factory=list)
     last_seq: int = 0
 
@@ -158,6 +161,15 @@ def replay(events: list[Event], initial_cash: Decimal, as_of: datetime | None = 
             st.corrections.append({**p, "seq": ev.seq})
         elif t == "ValuationPublished":
             st.valuations.append({**p, "seq": ev.seq})
+        elif t == "EventScheduled":
+            st.scheduled_events[p["event_key"]] = {**p, "seq": ev.seq}
+        elif t == "ForecastRecorded":
+            st.forecasts.append({**p, "seq": ev.seq, "recorded_at": ev.recorded_at})
+        elif t == "EventActualRecorded":
+            sched = st.scheduled_events.get(p["event_key"])
+            if sched and ev.occurred_at < parse_dt(sched["scheduled_at"]):
+                st.issues.append(f"seq {ev.seq}: 事件 {p['event_key']} 的实际值早于公布时间登记（未来信息）")
+            st.event_actuals[p["event_key"]] = {**p, "seq": ev.seq, "occurred_at": ev.occurred_at}
     return st
 
 

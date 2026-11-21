@@ -10,3 +10,4 @@ company_watchlist: [NVDA, AMD, AVGO, MSFT, GOOGL, AMZN, META, PLTR]
 default_trade_budget_usd: "3000"
 max_candidates: 3
 horizon_days: 10
+event_lookahead_days: 7     # 事件预期 Agent 提前几天为事件冻结预测

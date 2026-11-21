@@ -5,7 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from .clock import fmt_dual
+from .clock import fmt_dual, parse_dt
 from .ledger import q2
 
 if TYPE_CHECKING:
@@ -69,6 +69,37 @@ def render_daily(r: "RunResult") -> str:
         L.append("- 市场情景压力测试（按 beta 映射）：" + "，".join(f"{k} → {_usd(v_)}" for k, v_ in r.stress.items()))
     L.append("")
 
+    if r.regime:
+        from .agents.regime import LABEL_CN
+        rg, ex = r.regime, r.exposure
+        L.append(f"## 市场状态与仓位（市场状态 Agent / 仓位管理 Agent）")
+        L.append("")
+        L.append(f"- 市场状态：**{LABEL_CN.get(rg.label, rg.label)}**（{rg.label}，得分 {rg.score:+d}）— " + "；".join(rg.reasons))
+        if ex:
+            st_cn = {"IN_BAND": "在区间内", "TOO_MUCH_CASH": "现金过多", "TOO_LITTLE_CASH": "现金过少", "UNKNOWN": "未知"}[ex.status]
+            L.append(f"- 目标现金区间 {ex.band[0]:.0%}–{ex.band[1]:.0%}，当前 {ex.cash_weight:.1%} → **{st_cn}**")
+            for n in ex.notes[1:]:
+                L.append(f"- {n}")
+            if ex.mandate:
+                L.append(f"- ⚠ 强制要求：{'再部署（提出 BUY 方案）' if ex.mandate == 'REDEPLOY' else '降风险（提出 SELL 方案）'}")
+        L.append("")
+
+    if r.upcoming_events or r.new_forecasts or r.open_forecasts:
+        L.append("## 事件预期（事件预期 Agent，事前冻结）")
+        L.append("")
+        if r.upcoming_events:
+            L.append("| 事件 | 公布时间 | 标的 | 事前共识 |")
+            L.append("|---|---|---|---|")
+            for e in r.upcoming_events:
+                L.append(f"| {e['name']} | {fmt_dual(parse_dt(e['scheduled_at']))} | "
+                         f"{', '.join(e['tickers'])} | {e.get('consensus_before_release') or '未登记'} |")
+            L.append("")
+        for f in r.open_forecasts:
+            new = " 🆕" if f in r.new_forecasts else ""
+            L.append(f"- {f['event_name']} · {f['ticker']}{new}：上涨概率 {f['p_up']:.0%}，期望 {f['expected_return_pct']:+.2f}%"
+                     f"（事件后 {f['horizon_days']} 个交易日）；方案：{f['conditional_plan']}")
+        L.append("")
+
     L.append("## 行业轮动雷达（相对 SPY）")
     L.append("")
     L.append("| 标的 | 1日 | 5日 | 10日相对 | 20日相对 | 20日年化波动 | 20日线上方 |")
@@ -88,7 +119,8 @@ def render_daily(r: "RunResult") -> str:
         L.append("")
     for i, g in enumerate(r.gated):
         c, vc = g["candidate"], g["validated"]
-        L.append(f"### 方案 {i}：{c.action} {c.ticker} ≈ {_usd(c.budget_usd)} → **{g['gate']}**")
+        src = "（仓位管理 Agent 补位）" if g.get("origin") == "exposure" else ""
+        L.append(f"### 方案 {i}：{c.action} {c.ticker} ≈ {_usd(c.budget_usd)} → **{g['gate']}**{src}")
         L.append("")
         L.append(f"- 论点：{c.thesis}")
         L.append("- 情景：" + "；".join(f"{s.name} p={s.probability:.2f} r={s.return_pct:+.2f}%" for s in c.scenarios)
@@ -137,6 +169,36 @@ def render_daily(r: "RunResult") -> str:
     else:
         L.append("无订单。")
     L.append("")
+
+    pm = r.postmortem
+    if pm:
+        L.append("## 复盘校准（复盘校准 Agent）")
+        L.append("")
+        d = pm.decomposition
+        if d:
+            L.append(f"**超额来源拆分（{d['period']}）：** 相对 SPY {_usd(d['excess_vs_spy'])} = "
+                     f"敞口效应 {_usd(d['exposure_effect'])}（平均现金 {d['avg_cash_weight']:.0%}）"
+                     f" + 敞口之外（选股/择时/执行）{_usd(d['beyond_exposure'])}")
+            L.append("")
+        if pm.counterfactuals:
+            L.append("| 反事实分支（不计入账本） | 期末净值 | 该分支 − 实际 | 说明 |")
+            L.append("|---|---:|---:|---|")
+            for c in pm.counterfactuals:
+                L.append(f"| {c['name']} | {_usd(c['nav'])} | {_usd(c['vs_actual'])} | {c['note']} |")
+            L.append("")
+        for kind, name in (("decision", "交易决策"), ("forecast", "事件预测")):
+            sm = pm.summary(kind)
+            if sm["n"]:
+                L.append(f"- 已到期{name} {sm['n']} 个：方向命中率 {sm['hit_rate']:.0%}，Brier {sm['brier']:.3f}"
+                         f"（0.25 = 50% 基线），平均误差 {sm['mean_abs_err_pct']:.2f}pp")
+        holds = [x for x in pm.scored if x.kind == "hold" and x.realized_pct is not None]
+        for h in holds[-5:]:
+            L.append(f"- HOLD {h.start}→{h.end}：SPY {h.realized_pct:+.2f}%，{h.note}")
+        if pm.pending:
+            L.append(f"- 未到期待评分：{pm.pending} 个")
+        for x in pm.lessons:
+            L.append(f"- 教训：{x}")
+        L.append("")
 
     L.append("## 审计")
     L.append("")

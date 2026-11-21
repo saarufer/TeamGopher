@@ -38,6 +38,9 @@ EVENT_TYPES = {
     "ValuationPublished",
     "AuditFlagRaised",
     "AuditResolved",
+    "EventScheduled",
+    "ForecastRecorded",
+    "EventActualRecorded",
 }
 
 

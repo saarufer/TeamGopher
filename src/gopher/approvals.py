@@ -45,6 +45,14 @@ def approve(store: EventStore, initial_cash: Decimal, meeting_id: str, *, ticker
     if valid_until is None or ensure_aware(valid_until) <= at:
         raise ApprovalError("必须给出晚于当前时间的有效期 valid_until")
     caps = {k.upper(): Decimal(str(v)) for k, v in tickers_caps_usd.items()}
+    qty_caps = {k.upper(): Decimal(str(v)) for k, v in (ticker_qty_caps or {}).items()}
+    if candidate_index is not None or len(cands) == 1:
+        c = cands[candidate_index if candidate_index is not None else 0]
+        t, act = (c.get("ticker") or "").upper(), c.get("action")
+        if t and t not in caps and t not in qty_caps:
+            raise ApprovalError(f"所选方案是 {act} {t}，但授权额度里没有 {t}")
+        if act in ("BUY", "SELL") and act not in sides:
+            raise ApprovalError(f"所选方案是 {act}，但授权方向是 {sides}（卖出请加 --sides SELL）")
     if any(v <= 0 for v in caps.values()):
         raise ApprovalError("额度必须为正")
     budget = Decimal(str(budget_usd)) if budget_usd is not None else (sum(caps.values()) if caps else None)
@@ -52,7 +60,7 @@ def approve(store: EventStore, initial_cash: Decimal, meeting_id: str, *, ticker
     store.append("ApprovalGranted", {
         "approval_id": approval_id, "meeting_id": meeting_id, "granted_at": at, "sides": sides,
         "budget_usd": budget, "ticker_caps_usd": caps,
-        "ticker_qty_caps": {k.upper(): Decimal(str(v)) for k, v in (ticker_qty_caps or {}).items()},
+        "ticker_qty_caps": qty_caps,
         "valid_from": ensure_aware(valid_from) if valid_from else at, "valid_until": ensure_aware(valid_until),
         "execution_rules": execution_rules,
         "note": f"批准方案 #{candidate_index}" if candidate_index is not None else "",
