@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" role="img" aria-labelledby="t d">
+<title id="t">地鼠组合 vs SPY 基准（2026-10-02 至 11-19）</title>
+<desc id="d">上图：组合净值与等额 SPY 基准净值；下图：每日相对 SPY 的超额金额。10/02–10/15 为独立重建，10/16 起为原日报登记值。</desc>
+<style>
+svg{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#8a8984;--grid:#e6e5e1;--s1:#2a78d6;--s2:#eb6834;--neg:#e34948;
+font-family:system-ui,-apple-system,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif}
+@media (prefers-color-scheme:dark){svg{--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#8f8e88;--grid:#2e2e2b;--s1:#3987e5;--s2:#d95926;--neg:#e66767}}
+.bg{fill:var(--surface)}.t{fill:var(--ink);font-size:17px;font-weight:600}.st{fill:var(--ink2);font-size:12.5px}
+.ax{fill:var(--ink2);font-size:11.5px}.mut{fill:var(--muted);font-size:11px}.lab{fill:var(--ink);font-size:12.5px;font-weight:600}
+.grid{stroke:var(--grid);stroke-width:1}.base{stroke:var(--muted);stroke-width:1}
+.l1{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.l2{fill:none;stroke:var(--s2);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.dash{stroke-dasharray:4 4}.pos{fill:var(--s1)}.negb{fill:var(--neg)}.rec{opacity:.45}
+.sep{stroke:var(--muted);stroke-width:1;stroke-dasharray:2 3}.dot1{fill:var(--s1);stroke:var(--surface);stroke-width:2}.dot2{fill:var(--s2);stroke:var(--surface);stroke-width:2}
+</style>
+<rect class="bg" width="960" height="600" rx="8"/>
+<text class="t" x="78" y="30">地鼠组合 vs SPY：截至 11/19 领先 $3,177（+3.18pp）</text>
+<text class="st" x="78" y="50">初始 $100,000，SPY 基准 = 10/02 收盘 $769.64 等额买入（价格收益）。虚线/浅色 = 独立重建（10/02–10/15）</text>
+<line class="l1" x1="560" y1="62" x2="582" y2="62"/><text class="ax" x="588" y="66">地鼠组合净值</text>
+<line class="l2" x1="680" y1="62" x2="702" y2="62"/><text class="ax" x="708" y="66">SPY 基准净值</text>
+<line class="grid" x1="78" x2="810" y1="330.0" y2="330.0"/>
+<text class="ax" x="70" y="334.0" text-anchor="end">$92,000</text>
+<line class="grid" x1="78" x2="810" y1="278.0" y2="278.0"/>
+<text class="ax" x="70" y="282.0" text-anchor="end">$94,000</text>
+<line class="grid" x1="78" x2="810" y1="226.0" y2="226.0"/>
+<text class="ax" x="70" y="230.0" text-anchor="end">$96,000</text>
+<line class="grid" x1="78" x2="810" y1="174.0" y2="174.0"/>
+<text class="ax" x="70" y="178.0" text-anchor="end">$98,000</text>
+<line class="grid" x1="78" x2="810" y1="122.0" y2="122.0"/>
+<text class="ax" x="70" y="126.0" text-anchor="end">$100,000</text>
+<line class="grid" x1="78" x2="810" y1="70.0" y2="70.0"/>
+<text class="ax" x="70" y="74.0" text-anchor="end">$102,000</text>
+<line class="base" x1="78" x2="810" y1="122.0" y2="122.0"/>
+<line class="sep" x1="293.3" x2="293.3" y1="70" y2="540"/>
+<text class="mut" x="297.3" y="324">← 独立重建 | 原日报登记 →</text>
+<line class="sep" x1="530.1" x2="530.1" y1="70" y2="540"/>
+<text class="mut" x="534.1" y="324">原赛/延长分隔（参考，终点待确认）</text>
+<path class="l1 dash" d="M78.0,122.0 L99.5,122.0 L121.1,124.1 L142.6,126.6 L164.1,135.7 L185.6,132.2 L207.2,130.3 L228.7,127.9 L250.2,139.6 L271.8,143.5 L293.3,151.6"/>
+<path class="l1" d="M293.3,151.6 L314.8,146.0 L336.4,145.3 L357.9,140.6 L379.4,150.8 L400.9,150.5 L422.5,145.4 L444.0,143.7 L465.5,142.9 L487.1,145.6 L508.6,157.5 L530.1,161.2 L551.6,158.8 L573.2,153.4 L594.7,190.8 L616.2,187.3 L637.8,172.8 L659.3,177.0 L680.8,166.5 L702.4,171.9 L723.9,173.3 L745.4,188.0 L766.9,196.2 L788.5,205.4 L810.0,221.0"/>
+<path class="l2 dash" d="M78.0,122.0 L99.5,104.5 L121.1,90.1 L142.6,96.4 L164.1,107.5 L185.6,91.8 L207.2,93.4 L228.7,93.7 L250.2,122.1 L271.8,114.7 L293.3,143.6"/>
+<path class="l2" d="M293.3,143.6 L314.8,132.7 L336.4,124.0 L357.9,110.3 L379.4,141.2 L400.9,154.7 L422.5,136.4 L444.0,121.9 L465.5,113.0 L487.1,122.9 L508.6,169.0 L530.1,181.3 L551.6,173.7 L573.2,131.6 L594.7,245.8 L616.2,238.0 L637.8,179.3 L659.3,188.6 L680.8,155.2 L702.4,164.3 L723.9,173.6 L745.4,222.3 L766.9,247.7 L788.5,255.2 L810.0,303.6"/>
+<circle class="dot1" cx="810.0" cy="221.0" r="4.5"/><circle class="dot2" cx="810.0" cy="303.6" r="4.5"/>
+<text class="lab" x="820.0" y="225.0">地鼠 $96,191</text>
+<text class="lab" x="820.0" y="307.6">SPY $93,014</text>
+<text class="lab" x="78" y="386">每日相对 SPY 的超额金额</text>
+<line class="grid" x1="78" x2="810" y1="540.0" y2="540.0"/>
+<text class="ax" x="70" y="544.0" text-anchor="end">-$2,000</text>
+<line class="grid" x1="78" x2="810" y1="514.5" y2="514.5"/>
+<text class="ax" x="70" y="518.5" text-anchor="end">-$1,000</text>
+<line class="grid" x1="78" x2="810" y1="489.1" y2="489.1"/>
+<text class="ax" x="70" y="493.1" text-anchor="end">$0</text>
+<line class="grid" x1="78" x2="810" y1="463.6" y2="463.6"/>
+<text class="ax" x="70" y="467.6" text-anchor="end">+$1,000</text>
+<line class="grid" x1="78" x2="810" y1="438.2" y2="438.2"/>
+<text class="ax" x="70" y="442.2" text-anchor="end">+$2,000</text>
+<line class="grid" x1="78" x2="810" y1="412.7" y2="412.7"/>
+<text class="ax" x="70" y="416.7" text-anchor="end">+$3,000</text>
+<path d="M71.5,489.1 V490.1 Q71.5,489.1 72.5,489.1 H83.5 Q84.5,489.1 84.5,490.1 V489.1 Z" class="pos rec"><title>2026-10-02 超额 +0.00</title></path>
+<path d="M93.1,489.1 V502.3 Q93.1,506.3 97.1,506.3 H102.0 Q106.0,506.3 106.0,502.3 V489.1 Z" class="negb rec"><title>2026-10-05 超额 -674.34</title></path>
+<path d="M114.6,489.1 V518.4 Q114.6,522.4 118.6,522.4 H123.5 Q127.5,522.4 127.5,518.4 V489.1 Z" class="negb rec"><title>2026-10-06 超额 -1,307.51</title></path>
+<path d="M136.1,489.1 V514.6 Q136.1,518.6 140.1,518.6 H145.0 Q149.0,518.6 149.0,514.6 V489.1 Z" class="negb rec"><title>2026-10-07 超额 -1,160.05</title></path>
+<path d="M157.7,489.1 V512.7 Q157.7,516.7 161.7,516.7 H166.6 Q170.6,516.7 170.6,512.7 V489.1 Z" class="negb rec"><title>2026-10-08 超额 -1,083.73</title></path>
+<path d="M179.2,489.1 V524.6 Q179.2,528.6 183.2,528.6 H188.1 Q192.1,528.6 192.1,524.6 V489.1 Z" class="negb rec"><title>2026-10-09 超额 -1,552.94</title></path>
+<path d="M200.7,489.1 V521.2 Q200.7,525.2 204.7,525.2 H209.6 Q213.6,525.2 213.6,521.2 V489.1 Z" class="negb rec"><title>2026-10-12 超额 -1,417.00</title></path>
+<path d="M222.2,489.1 V518.5 Q222.2,522.5 226.2,522.5 H231.2 Q235.2,522.5 235.2,518.5 V489.1 Z" class="negb rec"><title>2026-10-13 超额 -1,313.91</title></path>
+<path d="M243.8,489.1 V502.2 Q243.8,506.2 247.8,506.2 H252.7 Q256.7,506.2 256.7,502.2 V489.1 Z" class="negb rec"><title>2026-10-14 超额 -671.97</title></path>
+<path d="M265.3,489.1 V513.2 Q265.3,517.2 269.3,517.2 H274.2 Q278.2,517.2 278.2,513.2 V489.1 Z" class="negb rec"><title>2026-10-15 超额 -1,105.43</title></path>
+<path d="M286.8,489.1 V493.0 Q286.8,497.0 290.8,497.0 H295.8 Q299.8,497.0 299.8,493.0 V489.1 Z" class="negb"><title>2026-10-16 超额 -309.11</title></path>
+<path d="M308.4,489.1 V498.1 Q308.4,502.1 312.4,502.1 H317.3 Q321.3,502.1 321.3,498.1 V489.1 Z" class="negb"><title>2026-10-19 超额 -511.82</title></path>
+<path d="M329.9,489.1 V505.9 Q329.9,509.9 333.9,509.9 H338.8 Q342.8,509.9 342.8,505.9 V489.1 Z" class="negb"><title>2026-10-20 超额 -817.67</title></path>
+<path d="M351.4,489.1 V514.7 Q351.4,518.7 355.4,518.7 H360.3 Q364.3,518.7 364.3,514.7 V489.1 Z" class="negb"><title>2026-10-21 超额 -1,162.58</title></path>
+<path d="M373.0,489.1 V494.5 Q373.0,498.5 377.0,498.5 H381.9 Q385.9,498.5 385.9,494.5 V489.1 Z" class="negb"><title>2026-10-22 超额 -371.00</title></path>
+<path d="M394.5,489.1 V489.0 Q394.5,485.0 398.5,485.0 H403.4 Q407.4,485.0 407.4,489.0 V489.1 Z" class="pos"><title>2026-10-23 超额 +158.94</title></path>
+<path d="M416.0,489.1 V493.9 Q416.0,497.9 420.0,497.9 H424.9 Q428.9,497.9 428.9,493.9 V489.1 Z" class="negb"><title>2026-10-26 超额 -345.10</title></path>
+<path d="M437.5,489.1 V506.4 Q437.5,510.4 441.5,510.4 H446.5 Q450.5,510.4 450.5,506.4 V489.1 Z" class="negb"><title>2026-10-27 超额 -837.72</title></path>
+<path d="M459.1,489.1 V514.4 Q459.1,518.4 463.1,518.4 H468.0 Q472.0,518.4 472.0,514.4 V489.1 Z" class="negb"><title>2026-10-28 超额 -1,150.99</title></path>
+<path d="M480.6,489.1 V507.3 Q480.6,511.3 484.6,511.3 H489.5 Q493.5,511.3 493.5,507.3 V489.1 Z" class="negb"><title>2026-10-29 超额 -872.48</title></path>
+<path d="M502.1,489.1 V481.8 Q502.1,477.8 506.1,477.8 H511.0 Q515.0,477.8 515.0,481.8 V489.1 Z" class="pos"><title>2026-10-30 超额 +442.57</title></path>
+<path d="M523.7,489.1 V473.5 Q523.7,469.5 527.7,469.5 H532.6 Q536.6,469.5 536.6,473.5 V489.1 Z" class="pos"><title>2026-11-02 超额 +770.82</title></path>
+<path d="M545.2,489.1 V478.6 Q545.2,474.6 549.2,474.6 H554.1 Q558.1,474.6 558.1,478.6 V489.1 Z" class="pos"><title>2026-11-03 超额 +569.71</title></path>
+<path d="M566.7,489.1 V506.5 Q566.7,510.5 570.7,510.5 H575.6 Q579.6,510.5 579.6,506.5 V489.1 Z" class="negb"><title>2026-11-04 超额 -841.46</title></path>
+<path d="M588.2,489.1 V439.2 Q588.2,435.2 592.2,435.2 H597.2 Q601.2,435.2 601.2,439.2 V489.1 Z" class="pos"><title>2026-11-05 超额 +2,115.21</title></path>
+<path d="M609.8,489.1 V443.4 Q609.8,439.4 613.8,439.4 H618.7 Q622.7,439.4 622.7,443.4 V489.1 Z" class="pos"><title>2026-11-06 超额 +1,953.01</title></path>
+<path d="M631.3,489.1 V486.8 Q631.3,482.8 635.3,482.8 H640.2 Q644.2,482.8 644.2,486.8 V489.1 Z" class="pos"><title>2026-11-09 超额 +247.01</title></path>
+<path d="M652.8,489.1 V481.7 Q652.8,477.7 656.8,477.7 H661.8 Q665.8,477.7 665.8,481.7 V489.1 Z" class="pos"><title>2026-11-10 超额 +447.82</title></path>
+<path d="M674.4,489.1 V496.2 Q674.4,500.2 678.4,500.2 H683.3 Q687.3,500.2 687.3,496.2 V489.1 Z" class="negb"><title>2026-11-11 超额 -435.71</title></path>
+<path d="M695.9,489.1 V492.5 Q695.9,496.5 699.9,496.5 H704.8 Q708.8,496.5 708.8,492.5 V489.1 Z" class="negb"><title>2026-11-12 超额 -291.78</title></path>
+<path d="M717.4,489.1 V489.8 Q717.4,488.8 718.4,488.8 H729.3 Q730.3,488.8 730.3,489.8 V489.1 Z" class="pos"><title>2026-11-13 超额 +10.20</title></path>
+<path d="M739.0,489.1 V459.5 Q739.0,455.5 743.0,455.5 H747.9 Q751.9,455.5 751.9,459.5 V489.1 Z" class="pos"><title>2026-11-16 超额 +1,318.32</title></path>
+<path d="M760.5,489.1 V442.7 Q760.5,438.7 764.5,438.7 H769.4 Q773.4,438.7 773.4,442.7 V489.1 Z" class="pos"><title>2026-11-17 超额 +1,980.94</title></path>
+<path d="M782.0,489.1 V444.3 Q782.0,440.3 786.0,440.3 H790.9 Q794.9,440.3 794.9,444.3 V489.1 Z" class="pos"><title>2026-11-18 超额 +1,915.46</title></path>
+<path d="M803.5,489.1 V412.2 Q803.5,408.2 807.5,408.2 H812.5 Q816.5,408.2 816.5,412.2 V489.1 Z" class="pos"><title>2026-11-19 超额 +3,177.36</title></path>
+<line class="base" x1="78" x2="810" y1="489.1" y2="489.1"/>
+<text class="lab" x="820.0" y="412.2">+$3,177</text>
+<text class="ax" x="185.6" y="544.6" text-anchor="middle">-$1,553</text>
+<text class="ax" x="78.0" y="558" text-anchor="middle">10/2</text>
+<text class="ax" x="207.2" y="558" text-anchor="middle">10/12</text>
+<text class="ax" x="314.8" y="558" text-anchor="middle">10/19</text>
+<text class="ax" x="422.5" y="558" text-anchor="middle">10/26</text>
+<text class="ax" x="530.1" y="558" text-anchor="middle">11/2</text>
+<text class="ax" x="637.8" y="558" text-anchor="middle">11/9</text>
+<text class="ax" x="745.4" y="558" text-anchor="middle">11/16</text>
+<text class="ax" x="810.0" y="558" text-anchor="middle">11/19</text>
+<text class="mut" x="78" y="584">数据：docs/history/Gopher_Daily_Performance.csv（原日报登记）、Gopher_Reconstructed_2026-10-02_to_10-15.csv（独立重建）</text>
+</svg>
