@@ -1,21 +1,36 @@
-# 地鼠团队 Gopher Investment Agents (GIA)
+<div align="center">
 
-一个**可审计的多 Agent 美股投资研究系统**。它每天读行情、分析市场、提出买卖建议，并跟 SPY 比成绩。
-任何交易都要你在“地鼠会议”上亲自批准。所有记录写进不可篡改的账本，事后可以逐条复盘。
+<img src="docs/assets/gopher_logo.svg" width="180" height="180" alt="地鼠团队 logo">
+
+# Team Gopher · 地鼠团队
+
+**一群认真挖洞、绝不偷看未来的地鼠，帮你研究美股。**
+
+![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white) ![Tests](https://img.shields.io/badge/tests-60%20passed-1baf7a) ![Agents](https://img.shields.io/badge/agents-12%20只地鼠-c98a4b) ![Mode](https://img.shields.io/badge/仅模拟交易-不连券商-eb6834) ![Claude](https://img.shields.io/badge/AI-Claude-d97757)
+
+</div>
+
+一个**可审计的多 Agent 美股投资研究系统**。地鼠们每天读行情、分析市场、提出买卖建议，并跟 SPY 比成绩。
+任何交易都要你在“地鼠会议”上亲自点头。所有记录写进不可篡改的账本，事后可以逐条复盘。
 
 > ⚠️ **仅模拟交易**：不连接券商，不下真实订单，不构成投资建议。
 >
-> 大胆提出假设，保守认定事实；主动配置风险，严格控制权限；允许预测错误，绝不允许事后改账。
+> 🕳️ 大胆提出假设，保守认定事实；主动配置风险，严格控制权限；允许预测错误，绝不允许事后改账。
+
+### 🐾 认识一下团队
+
+<p align="center"><img src="docs/assets/gopher_team.svg" width="780" alt="地鼠团队 12 位成员：审计鼠、轮动鼠、新闻鼠、天气鼠、仓位鼠、日历鼠、复盘鼠、军师鼠、杠精鼠、保安鼠、跑腿鼠、记者鼠"></p>
+
+<sub>蓝圈 = 第一版就在的老成员，橙圈 = 新加入的四位。正式名字和分工见 <a href="#-agent-架构">Agent 架构</a>。</sub>
 
 **目录**
-- [第一个月战绩：地鼠 vs SPY](#第一个月战绩地鼠-vs-spy2026-10-02--11-19)
-- [Agent 架构](#agent-架构)
-- [新手使用指南（一步一步）](#新手使用指南一步一步)
-- [命令速查表](#命令速查表)
-- [常见问题](#常见问题)
-- [设计要点](#设计要点) · [目录结构](#目录结构) · [尚未实现](#尚未实现--待确认)
+- [🏆 第一个月战绩：地鼠 vs SPY](#-第一个月战绩地鼠-vs-spy2026-10-02--11-19)
+- [🧩 Agent 架构](#-agent-架构)
+- [🐣 新手使用指南（一步一步）](#-新手使用指南一步一步)
+- [📋 命令速查表](#-命令速查表) · [❓ 常见问题](#-常见问题)
+- [🛠️ 设计要点](#️-设计要点) · [📁 目录结构](#-目录结构) · [🚧 尚未实现](#-尚未实现--待确认)
 
-## 第一个月战绩：地鼠 vs SPY（2026-10-02 → 11-19）
+## 🏆 第一个月战绩：地鼠 vs SPY（2026-10-02 → 11-19）
 
 ![地鼠组合 vs SPY 基准](docs/history/gopher_vs_spy.svg)
 
@@ -69,7 +84,7 @@
 | `Gopher_Performance_Dashboard.html` | 离线交互式图表（下载后用浏览器打开） |
 | `gopher_vs_spy.svg` | 上面这张图 |
 
-## Agent 架构
+## 🧩 Agent 架构
 
 一共 **12 个 Agent**。**蓝色**是第一版就有的，**橙色**是第二版新增的四个辅助策略 Agent，灰色是基础设施，虚线框是你本人。
 
@@ -143,22 +158,22 @@ flowchart TD
 
 “确定性”指纯代码计算，同样的输入永远得到同样的结果。“LLM”指调用 Claude，没有凭证时自动换成确定性规则版本。
 
-#### 🟦 原有 Agent
+#### 🟦 原有 Agent（老成员）
 
 | # | Agent | 类型 | 做什么 | 输出 | 能否改仓位 |
 |---|---|---|---|---|---|
-| ① | **Auditor 审计** | 确定性 | 校验账本哈希链，重放现金与持仓，跟登记快照对账，检查授权是否超额、有没有未来信息 | 通过 / 未通过 + 告警清单。未通过时净值只能标“暂估” | 否 |
-| ② | **行业轮动 Agent** | 确定性 | 计算 SPY、QQQ、XLK、XLV、XLF、XLI、XLE、XLU、XLP、IWM、RSP、NVDA 等的 1/5/10/20 日收益、相对 SPY 强弱、波动率、是否在 20 日均线上方 | 行业轮动雷达表 | 否 |
-| ③ | **新闻 / 事实核验 Agent** | LLM + 联网搜索 | 只在 `--web` 时运行。检索宏观、财报、公司公告，标注事实 / 传闻 / 预测 / 观点；**URL 不在真实搜索结果里的一律丢弃** | 证据库条目（provisional） | 否 |
-| ⑧ | **Strategist 组合经理** | LLM / 规则 | 汇总所有 Agent 的信息，提出最多 3 个买卖候选 + “什么都不做”的对照；每个候选必须有 bull/base/bear 情景、概率、失效条件和证据 ID | 候选方案。期望收益由代码重算，引用不存在的证据会被剔除 | 否，只提议 |
-| ⑨ | **Red Team 反方** | LLM / 规则 | 对每个候选至少提 3 个质疑：关键事实错了怎么办？是否已经被价格反映？是不是追涨或确认偏误？ | PROCEED / 谨慎 / **建议否决** | 否，可建议否决 |
-| ⑩ | **Risk Manager 风控** | 确定性 | 检查现金够不够、是否做空、单股是否 ≥15% NAV、现金比例变化是否 ≥15pp、有没有覆盖的授权；做 ±2/5/10% 压力测试 | 硬阻止 / 会议触发条件 | 否，可阻止 |
-| ⑪ | **Execution 模拟执行** | 确定性 | 只执行已批准并冻结的订单；按分钟线保守判定成交，只有日线证据时标“待核实” | 成交 / 待核实 / 过期记录 | 只按冻结订单执行 |
-| ⑫ | **Reporter 中文日报** | 确定性 | 把以上所有结果写成日报，区分“正式估值”和“暂估”、“提案”和“成交” | `reports/日期/daily_report_HHMM.md` | 否 |
+| ① | <img src="docs/assets/avatars/auditor.svg" width="40" height="40" alt=""> **Auditor 审计** | 确定性 | 校验账本哈希链，重放现金与持仓，跟登记快照对账，检查授权是否超额、有没有未来信息 | 通过 / 未通过 + 告警清单。未通过时净值只能标“暂估” | 否 |
+| ② | <img src="docs/assets/avatars/rotation.svg" width="40" height="40" alt=""> **行业轮动 Agent** | 确定性 | 计算 SPY、QQQ、XLK、XLV、XLF、XLI、XLE、XLU、XLP、IWM、RSP、NVDA 等的 1/5/10/20 日收益、相对 SPY 强弱、波动率、是否在 20 日均线上方 | 行业轮动雷达表 | 否 |
+| ③ | <img src="docs/assets/avatars/news.svg" width="40" height="40" alt=""> **新闻 / 事实核验 Agent** | LLM + 联网搜索 | 只在 `--web` 时运行。检索宏观、财报、公司公告，标注事实 / 传闻 / 预测 / 观点；**URL 不在真实搜索结果里的一律丢弃** | 证据库条目（provisional） | 否 |
+| ⑧ | <img src="docs/assets/avatars/strategist.svg" width="40" height="40" alt=""> **Strategist 组合经理** | LLM / 规则 | 汇总所有 Agent 的信息，提出最多 3 个买卖候选 + “什么都不做”的对照；每个候选必须有 bull/base/bear 情景、概率、失效条件和证据 ID | 候选方案。期望收益由代码重算，引用不存在的证据会被剔除 | 否，只提议 |
+| ⑨ | <img src="docs/assets/avatars/red_team.svg" width="40" height="40" alt=""> **Red Team 反方** | LLM / 规则 | 对每个候选至少提 3 个质疑：关键事实错了怎么办？是否已经被价格反映？是不是追涨或确认偏误？ | PROCEED / 谨慎 / **建议否决** | 否，可建议否决 |
+| ⑩ | <img src="docs/assets/avatars/risk.svg" width="40" height="40" alt=""> **Risk Manager 风控** | 确定性 | 检查现金够不够、是否做空、单股是否 ≥15% NAV、现金比例变化是否 ≥15pp、有没有覆盖的授权；做 ±2/5/10% 压力测试 | 硬阻止 / 会议触发条件 | 否，可阻止 |
+| ⑪ | <img src="docs/assets/avatars/execution.svg" width="40" height="40" alt=""> **Execution 模拟执行** | 确定性 | 只执行已批准并冻结的订单；按分钟线保守判定成交，只有日线证据时标“待核实” | 成交 / 待核实 / 过期记录 | 只按冻结订单执行 |
+| ⑫ | <img src="docs/assets/avatars/reporter.svg" width="40" height="40" alt=""> **Reporter 中文日报** | 确定性 | 把以上所有结果写成日报，区分“正式估值”和“暂估”、“提案”和“成交” | `reports/日期/daily_report_HHMM.md` | 否 |
 
-#### 🟧 新增 Agent
+#### 🟧 新增 Agent（新成员）
 
-**④ 市场状态 Agent**（确定性，`src/gopher/agents/regime.py`）
+<img src="docs/assets/avatars/regime.svg" width="52" height="52" alt=""> **④ 市场状态 Agent**（确定性，`src/gopher/agents/regime.py`）
 
 用 SPY 和行业 ETF 的价格给市场打分（-4 到 +4），判断它处在哪种状态：
 
@@ -174,7 +189,7 @@ flowchart TD
 它是文档 §3.3 Macro Agent 的轻量替代：不需要经济数据源，只用已有行情。
 例：11/20 的判断是 **偏防守（-4 分）**：SPY 低于 50 日均线 6%，0/7 个行业在 20 日均线上方，距高点回撤 8.1%。
 
-**⑤ 仓位管理 Agent**（确定性，`src/gopher/agents/exposure.py`）
+<img src="docs/assets/avatars/exposure.svg" width="52" height="52" alt=""> **⑤ 仓位管理 Agent**（确定性，`src/gopher/agents/exposure.py`）
 
 给现金比例设一个**目标区间**，区间由市场状态决定（可在 `config/risk_limits.yaml` 修改）：
 
@@ -190,7 +205,7 @@ flowchart TD
 - 补位候选在报告里标“仓位管理 Agent 补位”。它照样要过反方、风控和**地鼠会议**，不会自动成交。
 - 例：11/20 处于偏防守，目标 55%–85%，当前现金 69.4% → 在区间内，不强制交易。
 
-**⑥ 事件预期 Agent**（LLM / 规则，`src/gopher/agents/expectations.py`）
+<img src="docs/assets/avatars/expectations.svg" width="52" height="52" alt=""> **⑥ 事件预期 Agent**（LLM / 规则，`src/gopher/agents/expectations.py`）
 
 1. 你用 `gopher event add` 登记重要事件（CPI、FOMC、非农、财报……），填公布时间和事前市场共识。
 2. 事件公布前 7 天内，每次运行都会检查：哪些事件 × 标的还没有预测，就生成一个：
@@ -201,7 +216,7 @@ flowchart TD
 4. 公布前**不能**登记实际值（接口拒绝；绕过接口写进去会被审计判为“未来信息”）。
 5. 冻结的预测会传给 Strategist，避免“等消息出来再说”；事后由复盘校准 Agent 打分。
 
-**⑦ 复盘校准 Agent**（确定性，`src/gopher/agents/postmortem.py`）
+<img src="docs/assets/avatars/postmortem.svg" width="52" height="52" alt=""> **⑦ 复盘校准 Agent**（确定性，`src/gopher/agents/postmortem.py`）
 
 每次运行时回看历史，结果写进日报，也传给下一次的 Strategist：
 
@@ -222,7 +237,7 @@ flowchart TD
 | 10/19 不减仓 | $94,757.20 | -$1,433.78 |
 | 10/12 不卖 BNO/XLE | $95,331.08 | -$859.90 |
 
-## 新手使用指南（一步一步）
+## 🐣 新手使用指南（一步一步）
 
 > 不熟悉命令行也没关系：下面每一步都可以直接复制粘贴。`#` 后面是说明，不用输入。
 
@@ -244,8 +259,8 @@ uv --version
 ### 第 1 步：下载项目并安装
 
 ```bash
-git clone https://github.com/saarufer/TeamHamster.git
-cd TeamHamster
+git clone https://github.com/saarufer/TeamGopher.git
+cd TeamGopher
 uv sync --all-extras        # 自动安装 Python 3.12 和所有依赖，约 1 分钟
 ```
 
@@ -443,7 +458,7 @@ uv run gopher review
 | 研究哪些标的 | `config/agents.yaml` | `research_universe` |
 | 用哪个 Claude 模型 | `config/agents.yaml` | `llm.model` |
 
-## 命令速查表
+## 📋 命令速查表
 
 | 命令 | 作用 |
 |---|---|
@@ -462,7 +477,7 @@ uv run gopher review
 
 每个命令都可以加 `--help` 查看完整参数，例如 `uv run gopher meeting --help`。
 
-## 常见问题
+## ❓ 常见问题
 
 | 现象 | 原因与解决 |
 |---|---|
@@ -477,7 +492,7 @@ uv run gopher review
 | `拒绝在不完整的日志上追加` | 账本文件被改动过。用备份恢复 `data/events/ledger.jsonl`，不要手动编辑它 |
 | 想清空重来 | 删除 `data/events/` 后重新 `gopher init`。**这会丢掉 init 之后的所有记录**，先备份 |
 
-## 每日流程
+## 🔁 每日流程
 
 ```
 行情/证据(PIT) → 审计 → 估值/SPY → 行业轮动 → 市场状态 → 仓位管理 → 事件预期 → [新闻] → 复盘校准
@@ -486,7 +501,7 @@ uv run gopher review
 
 HOLD / NO_TRADE 也记录为决策（文档 §15 方向 B），之后由复盘校准 Agent 计算机会成本。
 
-## 设计要点
+## 🛠️ 设计要点
 
 - **事件溯源**：`data/events/ledger.jsonl` 只能追加，用 SHA-256 哈希链串起来；现金与持仓只能由重放得到。更正只能追加新记录（`CashAdjustmentRecorded` / `CorrectionAppended`）。
 - **两套现金**：登记现金（历史原值 + 追加调整）和逐笔 `数量×价格` 推导的现金并行计算，差异在审计中显示（10/19 的 $0.01 舍入差异保持可见）。
@@ -495,7 +510,7 @@ HOLD / NO_TRADE 也记录为决策（文档 §15 方向 B），之后由复盘�
 - **确定性风控与审计**：Risk Manager、Auditor、市场状态、仓位管理、复盘校准、Reporter 都是确定性代码。审计不通过、价格源冲突（>0.5%）或价格口径混用时，净值只能标“暂估”。
 - **反事实不是利润**：复盘里的反事实只用于比较，不计入账本，报告里也不会写成“已经赚到”。
 
-## 目录结构
+## 📁 目录结构
 
 ```
 config/          competition / risk_limits / data_sources / agents
@@ -514,7 +529,7 @@ reports/YYYY-MM-DD/  日报（含 report_hash）
 tests/           验收测试（§12 + 新增 Agent）
 ```
 
-## 尚未实现 / 待确认
+## 🚧 尚未实现 / 待确认
 
 - 原比赛截止日期（`config/competition.yaml` 里 `end_date: null`），以及延长赛的起始日期。
 - 仓位管理的目标现金区间是工程默认值，需要你按自己的风险偏好确认。
